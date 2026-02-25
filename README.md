@@ -4,9 +4,11 @@ Real-time Finnish electricity spot price display for the M5Stack Core2. Fetches 
 
 ## Features
 
-- **Current price** shown in large color-coded text (green / yellow / red)
+- **Two display pages** — tap the touchscreen to toggle between:
+  - **Chart view** — current price + 24h bar chart with tomorrow's forecast
+  - **Big price view** — full-screen current price for at-a-glance reading
+- **Color-coded prices** (green / yellow / red) based on configurable thresholds
 - **15-minute granularity** for the current price slot
-- **24-hour bar chart** of today's hourly average prices
 - **Tomorrow's prices** shown alongside today when available (typically after 14:00 Finnish time)
 - **Automatic refresh** — display updates every 60 s, data re-fetched every hour
 - **NTP time sync** with Helsinki timezone and DST support
@@ -64,7 +66,11 @@ All user-configurable settings are in [`include/config.h`](include/config.h):
 
 Prices between `PRICE_LOW` and `PRICE_HIGH` are shown in yellow/amber.
 
-## Display Layout
+## Display Pages
+
+Tap anywhere on the touchscreen to toggle between the two pages.
+
+### Chart View (default)
 
 ```
 +----------------------------------+
@@ -78,6 +84,22 @@ Prices between `PRICE_LOW` and `PRICE_HIGH` are shown in yellow/amber.
 | 10|  ████ ██   ██     | ██ ████ |     white bar = current hour
 |  0|████████████████████|█████████|     vertical line = day separator
 |   00  06  12  18  00  06  12  18 |  <- hour labels
++----------------------------------+
+```
+
+### Big Price View
+
+```
++----------------------------------+
+| PORSSISAHKO  FI           14:35  |  <- header + clock
+|----------------------------------|
+|                                  |
+|           12.34                  |  <- large price (color-coded)
+|                                  |
+|           c/kWh                  |
+|                                  |
+|          klo 14:15               |  <- current slot label
+|                                  |
 +----------------------------------+
 ```
 
@@ -99,7 +121,7 @@ Managed automatically by PlatformIO:
 
 | Library | Version | Purpose |
 |---|---|---|
-| [M5Unified](https://github.com/m5stack/M5Unified) | >= 0.2.2 | Hardware abstraction (display, buttons) |
+| [M5Unified](https://github.com/m5stack/M5Unified) | >= 0.2.2 | Hardware abstraction (display, touch, buttons) |
 | [ArduinoJson](https://github.com/bblanchon/ArduinoJson) | >= 7.2.0 | JSON parsing for API responses |
 
 ## API
