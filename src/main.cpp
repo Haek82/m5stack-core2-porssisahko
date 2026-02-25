@@ -27,6 +27,7 @@ float  g_tmrPrices[24] = {};   // tomorrow's hourly average c/kWh (bar chart)
 bool   g_hasTomorrow   = false;
 bool   g_dataReady     = false;
 unsigned long g_lastFetch = 0;
+int    g_currentPage   = 0;        // 0 = chart view, 1 = big price view
 
 // -------------------------------------------------------
 // Helpers
@@ -161,9 +162,77 @@ static bool fetchPrices() {
 }
 
 // -------------------------------------------------------
+// Big-price page (page 1) — full-screen current price
+// -------------------------------------------------------
+static void drawBigPrice() {
+    M5.Display.fillScreen(TFT_BLACK);
+
+    time_t now = time(nullptr);
+    struct tm localNow;
+    localtime_r(&now, &localNow);
+
+    // Header (same as chart page)
+    M5.Display.setTextSize(1);
+    M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
+    M5.Display.setCursor(4, 4);
+    M5.Display.print("PORSSISAHKO  FI");
+
+    char timeBuf[6];
+    snprintf(timeBuf, sizeof(timeBuf), "%02d:%02d", localNow.tm_hour, localNow.tm_min);
+    M5.Display.setCursor(SCR_W - 37, 4);
+    M5.Display.print(timeBuf);
+
+    M5.Display.drawFastHLine(0, 16, SCR_W, TFT_DARKGREY);
+
+    if (!g_dataReady) {
+        M5.Display.setTextSize(2);
+        M5.Display.setTextColor(TFT_YELLOW, TFT_BLACK);
+        M5.Display.setCursor(60, 110);
+        M5.Display.print("Ladataan...");
+        return;
+    }
+
+    // Current 15-min slot price
+    int curHour  = localNow.tm_hour;
+    int curMin15 = (localNow.tm_min / 15) * 15;
+    int curSlot  = curHour * 4 + (localNow.tm_min / 15);
+    float cur    = g_qhPrices[curSlot];
+
+    // Large price — textsize 7 (~42px per char)
+    M5.Display.setTextColor(priceColour(cur), TFT_BLACK);
+    M5.Display.setTextSize(7);
+
+    char valBuf[12];
+    snprintf(valBuf, sizeof(valBuf), "%.2f", cur);
+    int charW  = 42;
+    int xPrice = (SCR_W - (int)strlen(valBuf) * charW) / 2;
+    if (xPrice < 0) xPrice = 0;
+    M5.Display.setCursor(xPrice, 60);
+    M5.Display.print(valBuf);
+
+    // Unit label
+    M5.Display.setTextSize(3);
+    M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
+    int xUnit = (SCR_W - 5 * 18) / 2;   // "c/kWh" = 5 chars, ~18px each at size 3
+    M5.Display.setCursor(xUnit, 140);
+    M5.Display.print("c/kWh");
+
+    // Time slot label
+    M5.Display.setTextSize(2);
+    M5.Display.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
+    char slotLbl[14];
+    snprintf(slotLbl, sizeof(slotLbl), "klo %02d:%02d", curHour, curMin15);
+    int xSlot = (SCR_W - (int)strlen(slotLbl) * 12) / 2;
+    M5.Display.setCursor(xSlot, 185);
+    M5.Display.print(slotLbl);
+}
+
+// -------------------------------------------------------
 // Draw UI
 // -------------------------------------------------------
 static void drawScreen() {
+    if (g_currentPage == 1) { drawBigPrice(); return; }
+
     M5.Display.fillScreen(TFT_BLACK);
 
     time_t now = time(nullptr);
@@ -370,6 +439,15 @@ void setup() {
 // -------------------------------------------------------
 void loop() {
     M5.update();
+
+    // Touch: toggle page on tap
+    static unsigned long lastTouch = 0;
+    auto touch = M5.Touch.getDetail();
+    if (touch.wasPressed() && millis() - lastTouch > 300) {
+        lastTouch = millis();
+        g_currentPage = (g_currentPage == 0) ? 1 : 0;
+        drawScreen();
+    }
 
     static unsigned long lastDraw = 0;
     unsigned long now = millis();
