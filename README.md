@@ -7,7 +7,7 @@ Real-time Finnish electricity spot price display for the M5Stack Core2. Fetches 
 - **Two display pages** — tap the touchscreen to toggle between:
   - **Chart view** — current price + 24h bar chart with tomorrow's forecast
   - **Big price view** — full-screen current price for at-a-glance reading
-- **Color-coded prices** (green / yellow / red) based on configurable thresholds
+- **Color-coded prices** (green / yellow / red / violet) based on configurable thresholds
 - **15-minute granularity** for the current price slot
 - **Tomorrow's prices** shown alongside today when available (typically after 14:00 Finnish time)
 - **Automatic refresh** — display updates every 60 s, data re-fetched every hour
@@ -60,11 +60,17 @@ All user-configurable settings are in [`include/config.h`](include/config.h):
 |---|---|---|
 | `WIFI_SSID` | `"SSID"` | WiFi network name |
 | `WIFI_PASSWORD` | `"PASSWORD"` | WiFi password |
-| `PRICE_LOW` | `10.0` | Threshold below which price is shown in **green** (c/kWh) |
-| `PRICE_HIGH` | `20.0` | Threshold above which price is shown in **red** (c/kWh) |
+| `PRICE_LOW` | `8.0` | Upper threshold for **green** (cheap) prices (c/kWh) |
+| `PRICE_HIGH` | `13.0` | Upper threshold for **yellow/amber** prices (c/kWh) |
+| `PRICE_VERY_HIGH` | `20.0` | Upper threshold for **red** prices; above this shown in **violet** (c/kWh) |
 | `FETCH_INTERVAL_MS` | `3600000` | How often to re-fetch prices from the API (ms) |
 
-Prices between `PRICE_LOW` and `PRICE_HIGH` are shown in yellow/amber.
+| Price range | Colour |
+|---|---|
+| < `PRICE_LOW` | Green |
+| `PRICE_LOW` … `PRICE_HIGH` | Yellow/amber |
+| `PRICE_HIGH` … `PRICE_VERY_HIGH` | Red |
+| > `PRICE_VERY_HIGH` | Violet |
 
 ## Display Pages
 

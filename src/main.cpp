@@ -54,9 +54,10 @@ static time_t parseUTCDate(const char* s) {
 // Pick display colour based on c/kWh value
 // Uses color888(r,g,b) so LovyanGFX handles BGR panel ordering correctly.
 static uint32_t priceColour(float cKwh) {
-    if (cKwh < PRICE_LOW)  return M5.Display.color888(  0, 210,   0);  // green
-    if (cKwh < PRICE_HIGH) return M5.Display.color888(220, 180,   0);  // amber/yellow
-    return                         M5.Display.color888(220,  30,   0);  // red
+    if (cKwh < PRICE_LOW)       return M5.Display.color888(  0, 210,   0);  // green
+    if (cKwh < PRICE_HIGH)      return M5.Display.color888(220, 180,   0);  // amber/yellow
+    if (cKwh < PRICE_VERY_HIGH) return M5.Display.color888(220,  30,   0);  // red
+    return                             M5.Display.color888(160,   0, 220);  // violet
 }
 
 // -------------------------------------------------------
